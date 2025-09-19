@@ -324,7 +324,7 @@ class MazeSolverApp:
         filtered_nodes = []
         if node_indices:
             last_idx = -10
-            min_dist = 3 # Heuristic distance to prevent 'fat' nodes
+            min_dist = 3
             for idx in node_indices:
                 if idx > last_idx + min_dist:
                     filtered_nodes.append(idx)
@@ -354,9 +354,12 @@ class MazeSolverApp:
             current_dir = 0 if dc > 0 else 2
         else:
             current_dir = 1 if dr > 0 else 3
+
+        # Add the first 'F' command to get to the first node
+        commands.append('F')
         
-        # 4. Iterate through the segments, deciding the turn at the start of each one
-        for i in range(len(node_indices) - 1):
+        # 4. Iterate from the first REAL node to the one before the end node
+        for i in range(1, len(node_indices) - 1):
             p_current_node = path[node_indices[i]]
             p_next_node = path[node_indices[i+1]]
             
@@ -367,8 +370,7 @@ class MazeSolverApp:
                 target_dir = 0 if dc_out > 0 else 2
             else:
                 target_dir = 1 if dr_out > 0 else 3
-            
-            # Determine turn needed at the current node to face the next segment
+
             if target_dir != current_dir:
                 diff = (target_dir - current_dir + 4) % 4
                 if diff == 1: commands.append('R')
@@ -376,7 +378,6 @@ class MazeSolverApp:
                 elif diff == 2: commands.extend(['R', 'R'])
                 current_dir = target_dir
             
-            # Add the command to move forward to the next node
             commands.append('F')
 
         return commands
