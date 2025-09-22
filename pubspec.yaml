@@ -1,0 +1,35 @@
+name: maze_robot_controller
+description: A Flutter application to control a maze-solving robot via Bluetooth.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # For Classic Bluetooth (HC-05)
+  flutter_bluetooth_serial: ^0.4.0
+  
+  # For handling runtime permissions
+  permission_handler: ^11.0.1 
+
+  # For state management
+  provider: ^6.0.0
+  
+  # Standard icons package
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+  flutter_lints: ^3.0.0
+
+# The following section is specific to Flutter packages.
+flutter:
+  uses-material-design: true
+
