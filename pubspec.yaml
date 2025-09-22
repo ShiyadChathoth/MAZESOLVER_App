@@ -20,6 +20,10 @@ dependencies:
   # For state management
   provider: ^6.0.0
   
+  # For file picking
+  file_picker: ^8.0.0+1
+  path_provider: ^2.0.11
+  
   # Standard icons package
   cupertino_icons: ^1.0.2
 
@@ -28,8 +32,21 @@ dev_dependencies:
     sdk: flutter
   
   flutter_lints: ^3.0.0
+  flutter_launcher_icons: "^0.13.1" # Keep this version for now
+
+# REVISED AND FINAL flutter_launcher_icons BLOCK
+flutter_icons: # Using the 'flutter_icons' alias
+  android: true # Enable Android icons
+  ios: true     # Enable iOS icons
+  image_path: "assets/icon/app_icon.png" # Path to your icon file
+  min_sdk_android: 21 # Ensure this matches your project's minSdk.
+  # Optional: Uncomment if iOS icons have a dark background due to alpha
+  # remove_alpha_ios: true
 
 # The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
 
+  # Add an assets section if it doesn't exist, and include your icon folder
+  assets:
+    - assets/icon/ # Make sure this path exists and contains your app_icon.png

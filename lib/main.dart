@@ -1,20 +1,16 @@
 import 'dart:async';
-
 import 'dart:convert';
-
 import 'dart:collection';
-
 import 'dart:math';
-
 import 'dart:typed_data';
-
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 import 'package:provider/provider.dart';
-
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-
 import 'package:permission_handler/permission_handler.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 // --- App Entry Point ---
 
@@ -302,6 +298,79 @@ class BluetoothMazeController extends ChangeNotifier {
         notifyListeners();
       }
     });
+  }
+
+  // --- New Methods for Save and Load ---
+
+  Future<void> saveMaze(BuildContext context) async {
+    final mazeData = {
+      'rows': rows,
+      'cols': cols,
+      'grid':
+          grid.map((row) => row.map((cell) => cell.index).toList()).toList(),
+      'startPoint':
+          startPoint != null ? {'x': startPoint!.x, 'y': startPoint!.y} : null,
+      'endPoint':
+          endPoint != null ? {'x': endPoint!.x, 'y': endPoint!.y} : null,
+    };
+
+    final jsonString = jsonEncode(mazeData);
+    final bytes = utf8.encode(jsonString);
+
+    try {
+      final path = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Maze',
+        fileName: 'maze.json',
+        bytes: bytes,
+      );
+
+      if (path != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Maze saved to $path')),
+        );
+      }
+    } catch (e) {
+      print("Error saving maze: $e");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving maze: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> loadMaze() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result != null) {
+        final file = File(result.files.single.path!);
+        final jsonString = await file.readAsString();
+        final mazeData = jsonDecode(jsonString);
+
+        rows = mazeData['rows'];
+        cols = mazeData['cols'];
+        grid = (mazeData['grid'] as List)
+            .map((row) => (row as List)
+                .map((cellIndex) => CellType.values[cellIndex])
+                .toList())
+            .toList();
+        startPoint = mazeData['startPoint'] != null
+            ? Point(mazeData['startPoint']['x'], mazeData['startPoint']['y'])
+            : null;
+        endPoint = mazeData['endPoint'] != null
+            ? Point(mazeData['endPoint']['x'], mazeData['endPoint']['y'])
+            : null;
+
+        clearSolution();
+        notifyListeners();
+      }
+    } catch (e) {
+      print("Error loading maze: $e");
+    }
   }
 
 // --- Bluetooth Logic ---
@@ -880,6 +949,22 @@ class MazeControls extends StatelessWidget {
               label: const Text("Reset"),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
               onPressed: model.isAnimatingSolution ? null : model.resetMaze,
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton.icon(
+              icon: const Icon(Icons.save),
+              label: const Text("Save Maze"),
+              onPressed: () => model.saveMaze(context),
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.folder_open),
+              label: const Text("Load Maze"),
+              onPressed: model.loadMaze,
             ),
           ],
         ),
